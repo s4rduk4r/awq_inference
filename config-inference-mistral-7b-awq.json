@@ -1,0 +1,19 @@
+{
+    "lora_apply_dir" : null,
+    "llama_q4_config_dir" : "/home/user/models/CollectiveCognition-v1.1-Mistral-7B-AWQ",
+    "llama_q4_model" : "model.safetensors",
+    "chat_mode" : false,
+    "prompt_format" : "auto",
+    "groupsize" : 128,
+    "rope_max_position_embeddings": 1638528,
+    "rope_theta": 10000.0,
+    "rope_ntk_a": 4,
+    "rope_scaling": null,
+    "offloading" : true,
+    "offload_folder" : "/home/user/offload",
+    "device_map" : null,
+    "max_memory" : {
+        "0" : "10Gib",
+        "cpu": "180Gib"
+    }
+}
