@@ -26,7 +26,6 @@ config = get_config()
 
 config_path = config.llama_q4_config_dir
 model_path = config.llama_q4_model
-groupsize = config.groupsize
 
 # * Show loaded parameters
 print(f"{config}\n")
@@ -58,7 +57,8 @@ txt_streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=Tru
 model = AutoAWQForCausalLM.from_quantized(config_path, 
                                           model_path, 
                                           fuse_layers=False,
-                                          safetensors=True
+                                          safetensors=True,
+                                          attn_implementation="flash_attention_2"
                                           )
 
 print(Style.BRIGHT + Fore.GREEN + f"Loaded the model in {(time.time()-t0):.2f} seconds.\nTimestamp: {dt.now()}")
@@ -103,7 +103,9 @@ def get_model_response(prompt: str, max_new_tokens:int = 4096, use_txt_streamer:
             output_attentions=False,
             output_hidden_states=False,
             output_scores=False,
-            streamer=txt_streamer if use_txt_streamer else None
+            streamer=txt_streamer if use_txt_streamer else None,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id
             )
     result_text = tokenizer.decode(generated['sequences'].cpu().tolist()[0])
     return result_text
@@ -134,7 +136,7 @@ def inference():
 
         print("Processing ⌛", end="")
         start = time.time()
-        chat.chat_history = get_model_response(prompt, config.max_new_tokens, config.num_beams == 1)
+        chat.chat_history = get_model_response(prompt, config.max_new_tokens, config.num_beams == 1 and config.no_streamer)
         print("\r" + Fore.LIGHTMAGENTA_EX + "AI:>" + prompt_builder.refine_output(chat.chat_history))
         end = time.time()
         print(Fore.LIGHTGREEN_EX + f"Inference time: {end - start:.2f}s\nTimestamp: {dt.now()}")
