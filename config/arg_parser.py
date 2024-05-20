@@ -146,7 +146,6 @@ elif WORK_MODE == EWorkModes.INFERENCE:
         parser.add_argument("--llama-q4-model", default="./llama-13b-4bit.safetensors", required=False,
             help="Path to the quantized model in huggingface format. Default: %(default)s"
         )
-        parser.add_argument("--groupsize", type=int, default=-1, help="Groupsize of GPTQv2 model. Use -1 for models created without groupsize argument. Default: %(default)s")
         parser.add_argument("--offloading", action="store_true", help="Use offloading for inference")
         parser.add_argument("--search-max-tokens", action="store_true", help="Search for the maximum number of tokens that fits into memory", required=False)
         # Inference input file
@@ -164,7 +163,7 @@ elif WORK_MODE == EWorkModes.INFERENCE:
         )
         parser.add_argument(
             "--prompt-fmt", default="auto", required=False,
-            help="Prompt format to use: ['llama', 'codellama', 'mistral', 'alpaca', 'auto']. Default: %(default)s"
+            help="Prompt format to use: ['llama', 'codellama', 'mistral', 'alpaca', 'openbuddy', 'auto']. Default: %(default)s"
         )
         
         parser.add_argument(
@@ -199,6 +198,10 @@ elif WORK_MODE == EWorkModes.INFERENCE:
             "--early-stopping", action="store_true", required=False,
             help="Set stopping condition for beam-based methods. Default: %(default)s"
         )
+        parser.add_argument(
+            "--no-streamer", action="store_false", required=False,
+            help="Turn off text streamer. Default: %(default)s"
+        )
 
         return vars(parser.parse_args())
 
@@ -219,8 +222,14 @@ elif WORK_MODE == EWorkModes.INFERENCE:
             inference_config.top_p = args["top_p"] if args["top_p"] != -1 else None
             inference_config.top_k = args["top_k"] if args["top_k"] != -1 else None
             inference_config.num_beams = args["num_beams"]
-            inference_config.early_stopping = args["early_stopping"]
-            inference_config.do_sample = bool(args["do_sample"]) if args["do_sample"] != "none" else None
+            inference_config.early_stopping = args["early_stopping"] 
+            inference_config.no_streamer = args["no_streamer"]
+            if args["do_sample"] == "true":
+                inference_config.do_sample = True
+            elif args["do_sample"] == "false":
+                inference_config.do_sample = False
+            elif args["do_sample"] == "none":
+                inference_config.do_sample = None
             return inference_config
         
         return Inference4bConfig(

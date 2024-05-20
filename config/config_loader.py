@@ -40,7 +40,6 @@ if WORK_MODE == EWorkModes.FINETUNE:
                 verbose=config["verbose"],
                 txt_row_thd=config["txt_row_thd"],
                 use_eos_token=config["use_eos_token"],
-                groupsize=config["groupsize"],
                 local_rank=config["local_rank"],
                 config_file_path=path
             )
@@ -61,7 +60,6 @@ elif WORK_MODE == EWorkModes.INFERENCE:
                 rope_theta=config["rope_theta"],
                 rope_ntk_a=config["rope_ntk_a"],
                 rope_scaling=config["rope_scaling"],
-                groupsize=config["groupsize"],
                 offloading=config["offloading"],
                 offload_folder=config["offload_folder"],
                 config_file_path=path,
@@ -79,5 +77,6 @@ elif WORK_MODE == EWorkModes.INFERENCE:
                 top_p = None,
                 top_k = None,
                 num_beams = None,
-                early_stopping = None
+                early_stopping = None,
+                no_streamer = None
             )

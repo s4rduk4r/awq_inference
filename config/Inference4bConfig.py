@@ -7,7 +7,6 @@ class Inference4bConfig:
     def __init__(self,
                  llama_q4_config_dir: str, llama_q4_model: str,
                  lora_apply_dir: str,
-                 groupsize: int,
                  chat_mode: bool,
                  rope_max_position_embeddings: int,
                  rope_theta: float,
@@ -30,7 +29,8 @@ class Inference4bConfig:
                  top_p: float,
                  top_k: int,
                  num_beams: int,
-                 early_stopping: bool
+                 early_stopping: bool,
+                 no_streamer: bool
                  ):
         """
         Args:
@@ -43,7 +43,6 @@ class Inference4bConfig:
             rope_scaling (dict): Dictionary containing the scaling configuration for the RoPE embeddings
             rope_ntk_a (float): RoPE NTK-scaled parameter *a* - https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/ntkaware_scaled_rope_allows_llama_models_to_have/?rdt=47731
             https://colab.research.google.com/drive/1VI2nhlyKvd5cw4-zHvAIk00cAVj2lCCC#scrollTo=d2ceb547
-            groupsize (int): Group size of GPTQv2 model
             offloading (bool): Use offloading
             offload_folder (str): Offloading disk folder
             config_file_path (str): path to config file used
@@ -60,12 +59,12 @@ class Inference4bConfig:
             top_k (int): Top K
             num_beams (int): search beams
             early_stopping (bool): set stopping conditions for beam-based methods
+            no_streamer (bool): turn off text streamer
         """
         self.llama_q4_config_dir = llama_q4_config_dir
         self.llama_q4_model = llama_q4_model
         self.lora_apply_dir = lora_apply_dir
         self.chat_mode = chat_mode
-        self.groupsize = groupsize
         self.rope_max_position_embeddings = rope_max_position_embeddings
         self.rope_theta = rope_theta
         self.rope_scaling = rope_scaling
@@ -96,6 +95,7 @@ class Inference4bConfig:
         self.top_k = top_k
         self.num_beams = num_beams
         self.early_stopping = early_stopping
+        self.no_streamer = no_streamer
 
         self.rope_validation()
 
@@ -136,7 +136,6 @@ class Inference4bConfig:
     def __str__(self) -> str:
         s = f"\nParameters:\n{'Inference':-^20}\n" +\
         f"{self.llama_q4_config_dir=}\n{self.llama_q4_model=}\n{self.lora_apply_dir=}\n" +\
-        f"{self.groupsize=}\n" +\
         f"{self.chat_mode=}\n" +\
         f"{self.rope_max_position_embeddings=}\n" +\
         f"{self.rope_theta=}\n" +\
@@ -153,6 +152,7 @@ class Inference4bConfig:
         f"{self.top_k=}\n" +\
         f"{self.num_beams=}\n" +\
         f"{self.early_stopping=}\n" +\
+        f"{self.no_streamer=}\n" +\
         f"{self.prompt_input_file=}\n" +\
         f"{self.prompt_template_file=}\n" +\
         f"{self.prompt_fmt=}\n" +\
