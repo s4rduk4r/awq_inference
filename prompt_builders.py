@@ -119,12 +119,66 @@ class CodeLlamaPrompt():
         return raw_model_reply.split("[/INST]")[-1].strip().split("</s>")[0]
 
 
+class OpenBuddyPrompt():
+    def __init__(self, system_msg: str = None) -> None:
+        if system_msg is not None and len(system_msg) > 0:
+            self.system_message = system_msg
+        else:
+            self.system_message = "You are a helpful, respectful and honest INTP-T AI Assistant named Buddy. You are talking to a human User.\n" \
+            "Always answer as helpfully and logically as possible, while being safe. "\
+            "Your answers should not include any harmful, political, religious, unethical, racist, sexist, toxic, dangerous, or illegal content. " \
+            "Please ensure that your responses are socially unbiased and positive in nature.\n" \
+            "If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. " \
+            "If you don't know the answer to a question, please don't share false information.\n" \
+            "You can speak fluently in many languages, for example: English, Chinese.\n" \
+            "You cannot access the internet, but you have vast knowledge, cutoff: 2021-09.\n" \
+            "You are trained by OpenBuddy team, (https://openbuddy.ai, https://github.com/OpenBuddy/OpenBuddy), " \
+            "you are based on LLaMA and Falcon transformers model, not related to GPT or OpenAI.\n\n"
+        
+        self.prompt_template = "{sys_msg}{history_output}\nUser: {input}\nAssistant:"
+        self.history = None
+    
+    def make(self, user_text: str, model_reply: str = None) -> str:
+        msg = self.prompt_template.format(
+                sys_msg = self.system_message if model_reply is None else "",
+                history_output = "" if model_reply is None else self.history,
+                input = user_text
+            )
+        return msg
+    
+    def refine_output(self, raw_model_reply: str) -> str:
+        self.history = raw_model_reply if self.history is None else self.history + "\nUser:" + raw_model_reply.rsplit("User:")[-1]
+        return raw_model_reply.rsplit("Assistant:")[-1].rsplit("\n</s>")[-2]
+
+
+# OpenBuddy-Llama3
+class OpenBuddyLlama3Prompt():
+    def __init__(self, system_msg: str = None) -> None:
+        self.system_msg = "You(assistant) are a helpful, respectful and honest INTP-T AI Assistant named Buddy. You are talking to a human(user).\n" +\
+            "Always answer as helpfully and logically as possible, while being safe. Your answers should not include any harmful, political, religious, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.\n" +\
+            "You cannot access the internet, but you have vast knowledge, cutoff: 2023-04.\n" +\
+            "You are trained by OpenBuddy team, (https://openbuddy.ai, https://github.com/OpenBuddy/OpenBuddy), not related to GPT or OpenAI." \
+    if system_msg is None else system_msg
+        self.prompt_template = "<|role|>system<|says|>{system_message}<|end|>\n<|role|>user<|says|>{prompt}<|end|>\n<|role|>assistant<|says|>\n"
+
+    def make(self, user_text: str, model_reply: str = None) -> str:
+        self.chat_history = self.system_msg if model_reply is None else self.chat_history + "\n" + self.refine_output(model_reply) + "\n"
+        return self.prompt_template.format(system_message = self.chat_history, prompt=user_text)
+    
+    def refine_output(self, raw_model_reply: str) -> str:
+        return raw_model_reply.split("<|role|>assistant<|says|>\n")[-1].strip().split("<|end|>")[0]
+
+
 PROMPT_BUILDER = {
     "llama": Llama2ChatPrompt,
     "codellama": CodeLlamaPrompt,
     "mistral": MistralPrompt,
-    "alpaca": AlpacaPrompt
+    "alpaca": AlpacaPrompt,
+    "openbuddy": OpenBuddyPrompt,
+    "openbuddyllama3" : OpenBuddyLlama3Prompt
 }
+
+
 
 
 class AutoPrompt():
