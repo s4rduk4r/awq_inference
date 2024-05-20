@@ -163,7 +163,7 @@ elif WORK_MODE == EWorkModes.INFERENCE:
         )
         parser.add_argument(
             "--prompt-fmt", default="auto", required=False,
-            help="Prompt format to use: ['llama', 'codellama', 'mistral', 'alpaca', 'openbuddy', 'auto']. Default: %(default)s"
+            help="Prompt format to use: ['llama', 'llama3', 'codellama', 'mistral', 'alpaca', 'openbuddy', 'auto']. Default: %(default)s"
         )
         
         parser.add_argument(

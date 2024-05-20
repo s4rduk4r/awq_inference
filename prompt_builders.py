@@ -151,22 +151,28 @@ class OpenBuddyPrompt():
         return raw_model_reply.rsplit("Assistant:")[-1].rsplit("\n</s>")[-2]
 
 
-# OpenBuddy-Llama3
-class OpenBuddyLlama3Prompt():
+# Llama3
+class Llama3Prompt():
     def __init__(self, system_msg: str = None) -> None:
-        self.system_msg = "You(assistant) are a helpful, respectful and honest INTP-T AI Assistant named Buddy. You are talking to a human(user).\n" +\
-            "Always answer as helpfully and logically as possible, while being safe. Your answers should not include any harmful, political, religious, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.\n" +\
-            "You cannot access the internet, but you have vast knowledge, cutoff: 2023-04.\n" +\
-            "You are trained by OpenBuddy team, (https://openbuddy.ai, https://github.com/OpenBuddy/OpenBuddy), not related to GPT or OpenAI." \
-    if system_msg is None else system_msg
-        self.prompt_template = "<|role|>system<|says|>{system_message}<|end|>\n<|role|>user<|says|>{prompt}<|end|>\n<|role|>assistant<|says|>\n"
+        if system_msg is None or len(system_msg) == 0:
+            self.system_msg = "You(assistant) are a helpful, respectful and honest INTP-T AI Assistant named Buddy. You are talking to a human(user).\n" +\
+                "Always answer as helpfully and logically as possible, while being safe. Your answers should not include any harmful, political, religious, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.\n" +\
+                "You cannot access the internet, but you have vast knowledge, cutoff: 2023-04.\n" +\
+                "You are trained by OpenBuddy team, (https://openbuddy.ai, https://github.com/OpenBuddy/OpenBuddy), not related to GPT or OpenAI."
+        else:
+            self.system_msg = system_msg
+
+        self.prompt_template = "<|role|>system<|says|>{system_message}<|end|>\n<|role|>user<|says|>{prompt}<|end|>\n<|role|>assistant<|says|>"
+        self.prompt_multi_template = "{chat_history}\n<|role|>user<|says|>{prompt}<|end|>\n<|role|>assistant<|says|>"
 
     def make(self, user_text: str, model_reply: str = None) -> str:
-        self.chat_history = self.system_msg if model_reply is None else self.chat_history + "\n" + self.refine_output(model_reply) + "\n"
-        return self.prompt_template.format(system_message = self.chat_history, prompt=user_text)
+        if model_reply is None:
+            return self.prompt_template.format(system_message = self.system_msg, prompt=user_text)
+        else:
+            return self.prompt_multi_template.format(chat_history = model_reply, prompt=user_text)
     
     def refine_output(self, raw_model_reply: str) -> str:
-        return raw_model_reply.split("<|role|>assistant<|says|>\n")[-1].strip().split("<|end|>")[0]
+        return raw_model_reply.split("<|role|>assistant<|says|>")[-1].split("<|end|>")[0]
 
 
 PROMPT_BUILDER = {
@@ -175,7 +181,7 @@ PROMPT_BUILDER = {
     "mistral": MistralPrompt,
     "alpaca": AlpacaPrompt,
     "openbuddy": OpenBuddyPrompt,
-    "openbuddyllama3" : OpenBuddyLlama3Prompt
+    "llama3" : Llama3Prompt
 }
 
 
